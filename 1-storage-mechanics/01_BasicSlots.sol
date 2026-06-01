@@ -11,13 +11,15 @@ contract BasicSlots {
 
     /**
      * @dev Retrieves 32 bytes of raw data from the specified storage slot.
-     * @param slotNumber The index of the storage slot to read (e.g., 0 or 1).
+     * @param _slotNumber The index of the storage slot to read (e.g., 0 or 1).
      */
-    function readSlot(uint256 slotNumber) public view returns (bytes32 result) {
+    function readSlot(
+        uint256 _slotNumber
+    ) public view returns (bytes32 result) {
         assembly {
             // sload(p) loads 32 bytes of data from storage slot 'p'
             // and assigns it to the 'result' variable to be returned.
-            result := sload(slotNumber)
+            result := sload(_slotNumber)
         }
     }
 }

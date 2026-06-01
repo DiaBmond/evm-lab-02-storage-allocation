@@ -12,27 +12,29 @@ contract VariablePacking {
 
     /**
      * @dev Reads the entire 32-byte data from a specific slot.
-     * @param slotNumber The slot index to read.
+     * @param _slotNumber The slot index to read.
      */
-    function readSlot(uint256 slotNumber) public view returns (bytes32 result) {
+    function readSlot(
+        uint256 _slotNumber
+    ) public view returns (bytes32 result) {
         assembly {
-            result := sload(slotNumber)
+            result := sload(_slotNumber)
         }
     }
 
     /**
      * @dev Extracts a specific 1-byte variable from the packed slot using shift and mask.
-     * @param shiftBits The number of bits to shift right (e.g., 8 bits for variable 'b').
+     * @param _shiftBits The number of bits to shift right (e.g., 8 bits for variable 'b').
      */
     function bitwiseManipulation(
-        uint256 shiftBits
+        uint256 _shiftBits
     ) public view returns (uint8 result) {
         assembly {
             // 1. Load the entire Slot 0
             let rawData := sload(0)
 
             // 2. Shift right by 'shiftBits'
-            let shifted := shr(shiftBits, rawData)
+            let shifted := shr(_shiftBits, rawData)
 
             // 3. Mask with 0xFF to isolate the rightmost byte
             result := and(shifted, 0xFF)
