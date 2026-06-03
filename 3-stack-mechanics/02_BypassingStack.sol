@@ -6,12 +6,20 @@ contract BypassingStack {
      * @dev Solution 1: Bypassing "Stack too deep" using Block Scoping.
      * By wrapping variables in {}, they are automatically popped from the stack
      * once the execution leaves the block, freeing up stack slots for new variables.
+     * Measures gas to prove efficiency.
      */
-    function bypassWithScope() public pure returns (uint256 result) {
+    function bypassWithScope()
+        public
+        view
+        returns (uint256 result, uint256 gasUsed)
+    {
+        // Snapshot initial gas
+        uint256 startGas = gasleft();
+
         uint256 sum1;
         uint256 sum2;
 
-        // Block 1: Handle the first half of the variables
+        // Block 1: Handle the first batch of 8 variables
         {
             uint256 a = 1;
             uint256 b = 2;
@@ -21,13 +29,13 @@ contract BypassingStack {
             uint256 f = 6;
             uint256 g = 7;
             uint256 h = 8;
-            uint256 i = 9;
 
-            sum1 = a + b + c + d + e + f + g + h + i;
-        } // a through i are destroyed and popped from the stack here!
+            sum1 = a + b + c + d + e + f + g + h;
+        } // Variables 'a' through 'h' are destroyed and popped from the stack here!
 
-        // Block 2: Handle the second half of the variables
+        // Block 2: Handle the second batch of 8 variables
         {
+            uint256 i = 9;
             uint256 j = 10;
             uint256 k = 11;
             uint256 l = 12;
@@ -35,21 +43,34 @@ contract BypassingStack {
             uint256 n = 14;
             uint256 o = 15;
             uint256 p = 16;
-            uint256 q = 17;
 
-            sum2 = j + k + l + m + n + o + p + q;
-        } // j through q are destroyed and popped from the stack here!
+            sum2 = i + j + k + l + m + n + o + p;
+        } // Variables 'i' through 'p' are destroyed and popped from the stack here!
+
+        // The final variable left outside the blocks
+        uint256 q = 17;
 
         // Combine the results safely without exceeding the 16-slot limit
-        result = sum1 + sum2;
+        result = sum1 + sum2 + q;
+
+        // Calculate total gas consumed by this logic
+        gasUsed = startGas - gasleft();
     }
 
     /**
      * @dev Solution 2: Bypassing "Stack too deep" using Memory.
      * Instead of pushing 17 individual variables onto the stack, we allocate an array in memory.
      * The stack only needs to hold 1 slot (the memory pointer), preventing overflow.
+     * Measures gas to show the high cost of memory expansion and array overhead.
      */
-    function bypassWithMemory() public pure returns (uint256 result) {
+    function bypassWithMemory()
+        public
+        view
+        returns (uint256 result, uint256 gasUsed)
+    {
+        // Snapshot initial gas
+        uint256 startGas = gasleft();
+
         // This array takes up lots of memory, but ONLY 1 stack slot (the pointer).
         uint256[] memory nums = new uint256[](17);
 
@@ -75,5 +96,8 @@ contract BypassingStack {
         for (uint256 i = 0; i < 17; i++) {
             result += nums[i];
         }
+
+        // Calculate total gas consumed by this logic
+        gasUsed = startGas - gasleft();
     }
 }
